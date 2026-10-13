@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Beginner Calendar</title>
+    <!-- Tailwind CSS for clean styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calendar-day {
+            min-height: 90px;
+            transition: all 0.2s ease;
+        }
+        .calendar-day:hover {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 flex flex-col items-center justify-center p-4">
+
+    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+        
+        <!-- Header with month and navigation buttons -->
+        <div class="bg-indigo-600 text-white p-6 flex items-center justify-between">
+            <h1 id="monthYearDisplay" class="text-xl font-bold">Month Year</h1>
+            <div class="flex space-x-2">
+                <button id="prevBtn" class="bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded-lg text-sm font-semibold transition">&larr; Prev</button>
+                <button id="todayBtn" class="bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Today</button>
+                <button id="nextBtn" class="bg-indigo-700 hover:bg-indigo-800 px-3 py-1.5 rounded-lg text-sm font-semibold transition">Next &rarr;</button>
+            </div>
+        </div>
+
+        <!-- Weekday header labels -->
+        <div class="grid grid-cols-7 bg-slate-100 text-center text-xs font-bold text-slate-500 py-3 border-b border-slate-200">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+        </div>
+
+        <!-- Calendar grid where days will be injected -->
+        <div id="calendarGrid" class="grid grid-cols-7 bg-slate-200 gap-px">
+            <!-- Days rendered via JavaScript -->
+        </div>
+
+        <!-- Selected date details and event adder footer -->
+        <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h3 id="selectedDateText" class="font-bold text-sm text-slate-700">Select a date to add an event</h3>
+                <p id="eventListText" class="text-xs text-slate-500 mt-0.5">No events for this day</p>
+            </div>
+            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                <input type="text" id="eventInput" placeholder="Enter event title..." class="px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 sm:w-64">
+                <button id="addEventBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition shadow-sm">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store current viewing date and selected date
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        
+        // Simple object to store events: key = "YYYY-MM-DD", value = [array of event strings]
+        let events = {};
+
+        // Month names array for easy lookup
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        // Run calendar generation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEvents();
+            renderCalendar();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                currentDate = new Date();
+                selectedDate = new Date();
+                renderCalendar();
+                updateSelectedDateDisplay();
+            });
+
+            document.getElementById('addEventBtn').addEventListener('click', () => {
+                addEventForSelectedDate();
+            });
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Update header title
+            document.getElementById('monthYearDisplay').textContent = `${monthNames[month]} ${year}`;
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            // Get first day of the month and total number of days
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const prevTotalDays = new Date(year, month, 0).getDate();
+
+            let cellsHtml = '';
+
+            // 1. Padding days from previous month
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevTotalDays - i;
+                cellsHtml += `<div class="calendar-day bg-slate-50/50 p-2 text-slate-300 text-xs">${dayNum}</div>`;
+            }
+
+            // 2. Days of current month
+            const todayStr = formatDateKey(new Date());
+            const selectedStr = formatDateKey(selectedDate);
+
+            for (let i = 1; i <= totalDays; i++) {
+                const thisDate = new Date(year, month, i);
+                const dateKey = formatDateKey(thisDate);
+                const isToday = (dateKey === todayStr);
+                const isSelected = (dateKey === selectedStr);
+
+                // Check if there are events for this day
+                const dayEvents = events[dateKey] || [];
+                let eventDots = '';
+                if (dayEvents.length > 0) {
+                    eventDots = `<div class="flex space-x-1 mt-1 items-center"><span class="w-2 h-2 rounded-full bg-indigo-500"></span><span class="text-[10px] text-indigo-600 font-bold">${dayEvents.length}</span></div>`;
+                }
+
+                // Styling classes based on status
+                let dayBg = "bg-white text-slate-700";
+                if (isSelected) {
+                    dayBg = "bg-indigo-50 text-indigo-900 ring-2 ring-indigo-600 ring-inset font-bold";
+                }
+
+                cellsHtml += `
+                    <div class="calendar-day ${dayBg} p-2 flex flex-col justify-between cursor-pointer" onclick="selectDateOnClick(${year}, ${month}, ${i})">
+                        <span class="w-6 h-6 flex items-center justify-center text-xs rounded-full ${isToday ? 'bg-indigo-600 text-white font-bold' : ''}">${i}</span>
+                        <div>${eventDots}</div>
+                    </div>
+                `;
+            }
+
+            // 3. Trailing padding days for next month to fill grid row
+            const totalCellsSoFar = firstDayIndex + totalDays;
+            const remainingCells = totalCellsSoFar <= 35 ? 35 - totalCellsSoFar : 42 - totalCellsSoFar;
+
+            for (let i = 1; i <= remainingCells; i++) {
+                cellsHtml += `<div class="calendar-day bg-slate-50/50 p-2 text-slate-300 text-xs">${i}</div>`;
+            }
+
+            grid.innerHTML = cellsHtml;
+            updateSelectedDateDisplay();
+        }
+
+        function selectDateOnClick(year, month, day) {
+            selectedDate = new Date(year, month, day);
+            renderCalendar(); // Re-render to update selected border highlight
+        }
+
+        function updateSelectedDateDisplay() {
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('selectedDateText').textContent = selectedDate.toLocaleDateString('en-US', options);
+
+            const dateKey = formatDateKey(selectedDate);
+            const dayEvents = events[dateKey] || [];
+
+            if (dayEvents.length === 0) {
+                document.getElementById('eventListText').textContent = "No events scheduled for this day.";
+            } else {
+                document.getElementById('eventListText').textContent = `Events: ${dayEvents.join(', ')}`;
+            }
+        }
+
+        function addEventForSelectedDate() {
+            const input = document.getElementById('eventInput');
+            const eventText = input.value.trim();
+
+            if (!eventText) {
+                return;
+            }
+
+            const dateKey = formatDateKey(selectedDate);
+            if (!events[dateKey]) {
+                events[dateKey] = [];
+            }
+
+            events[dateKey].push(eventText);
+            input.value = ''; // Clear input
+
+            saveEvents();
+            renderCalendar();
+        }
+
+        // Helper function to format date as YYYY-MM-DD key
+        function formatDateKey(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // Save events to browser LocalStorage
+        function saveEvents() {
+            localStorage.setItem('beginner_calendar_events', JSON.stringify(events));
+        }
+
+        // Load events from browser LocalStorage
+        function loadEvents() {
+            const saved = localStorage.getItem('beginner_calendar_events');
+            if (saved) {
+                try {
+                    events = JSON.parse(saved);
+                } catch(e) {
+                    events = {};
+                }
+            } else {
+                // Add a sample event for today as an example
+                const todayKey = formatDateKey(new Date());
+                events[todayKey] = ["Learn JavaScript Calendar"];
+            }
+        }
+    </script>
+</body>
+</html>
