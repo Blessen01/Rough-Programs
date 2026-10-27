@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mouse Over Event</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    #box { display: inline-block; margin-top: 30px; padding: 15px;
+           border: 2px solid #333; width: 300px; }
+    img { width: 280px; height: 200px; }
+    #text { font-size: 18px; font-weight: bold; margin-top: 10px; }
+  </style>
+  <script>
+    function showNew() {
+      document.getElementById("pic").src = "night1.jpg";
+      document.getElementById("text").innerHTML = "Good Night! The moon is out.";
+      document.getElementById("text").style.color = "darkblue";
+    }
+
+    function showOriginal() {
+      document.getElementById("pic").src = "day1.jpg";
+      document.getElementById("text").innerHTML = "Good Morning! Move the mouse over me.";
+      document.getElementById("text").style.color = "darkorange";
+    }
+  </script>
+</head>
+<body>
+  <h2>Mouse Over Demonstration</h2>
+  <div id="box" onmouseover="showNew()" onmouseout="showOriginal()">
+    <img id="pic" src="day1.jpg" alt="Picture">
+    <div id="text" style="color:darkorange;">Good Morning! Move the mouse over me.</div>
+  </div>
+</body>
+</html>
