@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration Form Validation</title>
+  <style>
+    body { font-family: Arial; }
+    table { margin: 20px auto; }
+    td { padding: 6px; }
+    .err { color: red; font-size: 12px; }
+  </style>
+  <script>
+    function validateForm() {
+      var name = document.getElementById("name").value.trim();
+      var email = document.getElementById("email").value.trim();
+      var pwd = document.getElementById("pwd").value;
+      var cpwd = document.getElementById("cpwd").value;
+      var mobile = document.getElementById("mobile").value.trim();
+      var age = document.getElementById("age").value;
+      var gender = document.querySelector('input[name="gender"]:checked');
+      var valid = true;
+
+      var ids = ["e_name", "e_email", "e_pwd", "e_cpwd", "e_mobile", "e_age", "e_gender"];
+      for (var i = 0; i < ids.length; i++) document.getElementById(ids[i]).innerHTML = "";
+
+      if (!/^[A-Za-z ]{3,}$/.test(name)) {
+        document.getElementById("e_name").innerHTML = "Name must have at least 3 letters (alphabets only).";
+        valid = false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById("e_email").innerHTML = "Enter a valid email address.";
+        valid = false;
+      }
+      if (pwd.length < 6) {
+        document.getElementById("e_pwd").innerHTML = "Password must be at least 6 characters.";
+        valid = false;
+      }
+      if (pwd !== cpwd) {
+        document.getElementById("e_cpwd").innerHTML = "Passwords do not match.";
+        valid = false;
+      }
+      if (!/^[6-9][0-9]{9}$/.test(mobile)) {
+        document.getElementById("e_mobile").innerHTML = "Enter a valid 10-digit mobile number.";
+        valid = false;
+      }
+      if (age === "" || age < 18 || age > 60) {
+        document.getElementById("e_age").innerHTML = "Age must be between 18 and 60.";
+        valid = false;
+      }
+      if (!gender) {
+        document.getElementById("e_gender").innerHTML = "Please select a gender.";
+        valid = false;
+      }
+
+      if (valid) alert("Registration successful!");
+      return valid;
+    }
+  </script>
+</head>
+<body>
+  <h2 align="center">Registration Form</h2>
+  <form onsubmit="return validateForm()">
+    <table>
+      <tr><td>Name</td><td><input type="text" id="name"><br><span class="err" id="e_name"></span></td></tr>
+      <tr><td>Email</td><td><input type="text" id="email"><br><span class="err" id="e_email"></span></td></tr>
+      <tr><td>Password</td><td><input type="password" id="pwd"><br><span class="err" id="e_pwd"></span></td></tr>
+      <tr><td>Confirm Password</td><td><input type="password" id="cpwd"><br><span class="err" id="e_cpwd"></span></td></tr>
+      <tr><td>Mobile</td><td><input type="number" id="mobile"><br><span class="err" id="e_mobile"></span></td></tr>
+      <tr><td>Age</td><td><input type="number" id="age"><br><span class="err" id="e_age"></span></td></tr>
+      <tr><td>Gender</td>
+          <td><input type="radio" name="gender" value="Male"> Male
+              <input type="radio" name="gender" value="Female"> Female
+              <br><span class="err" id="e_gender"></span></td></tr>
+      <tr><td colspan="2" align="center">
+          <input type="submit" value="Register"> <input type="reset" value="Reset"></td></tr>
+    </table>
+  </form>
+</body>
+</html>
