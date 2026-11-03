@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Exam</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .q { margin-bottom: 15px; }
+        #result { font-size: 18px; font-weight: bold; margin-top: 15px; }
+    </style>
+
+    <script>
+        var questions = [
+            {
+                q: "Which tag is used to create a hyperlink?",
+                o: ["<link>", "<a>", "<href>", "<url>"],
+                a: 1
+            },
+            {
+                q: "Which language runs in the web browser?",
+                o: ["Java", "C", "JavaScript", "Python"],
+                a: 2
+            },
+            {
+                q: "CSS stands for?",
+                o: [
+                    "Colorful Style Sheets",
+                    "Cascading Style Sheets",
+                    "Creative Style System",
+                    "Computer Style Sheets"
+                ],
+                a: 1
+            },
+            {
+                q: "Which function prints output in a PHP page?",
+                o: ["echo", "cout", "console", "write"],
+                a: 0
+            },
+            {
+                q: "Which symbol starts a PHP variable?",
+                o: ["#", "@", "$", "&"],
+                a: 2
+            }
+        ];
+
+        function loadExam() {
+            var html = "";
+            for (var i = 0; i < questions.length; i++) {
+                html += '<div class="q"><b>Q' + (i + 1) + ". " +
+                    questions[i].q.replace(/</g, "&lt;") + "</b><br>";
+
+                for (var j = 0; j < questions[i].o.length; j++) {
+                    html += '<label><input type="radio" name="q' + i +
+                        '" value="' + j + '">' +
+                        questions[i].o[j].replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+                        '</label><br>';
+                }
+
+                html += "</div>";
+            }
+
+            document.getElementById("exam").innerHTML = html;
+        }
+
+        function submitExam() {
+            var score = 0, unanswered = 0;
+
+            for (var i = 0; i < questions.length; i++) {
+                var sel = document.querySelector(
+                    "input[name='q" + i + "']:checked"
+                );
+
+                if (sel === null) unanswered++;
+                else if (parseInt(sel.value) === questions[i].a) score++;
+            }
+
+            var r = "Score: " + score + " / " + questions.length +
+                " (Unanswered: " + unanswered + ")<br>";
+
+            r += (score >= 3)
+                ? '<span style="color:green">Result: PASS</span>'
+                : '<span style="color:red">Result: FAIL</span>';
+
+            document.getElementById("result").innerHTML = r;
+        }
+    </script>
+</head>
+
+<body onload="loadExam()">
+    <h2>Online Exam - Web Technology</h2>
+
+    <div id="exam"></div>
+
+    <button onclick="submitExam()">Submit</button>
+
+    <div id="result"></div>
+</body>
+</html>
