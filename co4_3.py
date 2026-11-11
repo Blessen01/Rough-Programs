@@ -1,4 +1,4 @@
-class Rectangle:
+cclass Rectangle:
     def __init__(self, length, width):
         self.length = length
         self.width = width
@@ -6,13 +6,14 @@ class Rectangle:
     def area(self):
         return self.length * self.width
 
-    def lt(r1, r2):
-       return r1.area() < r2.area()
+    def __lt__(self,other):
+       return self.area() < other.area()
 
-r1 = Rectangle(10, 5)
-r2 = Rectangle(8, 8)
+r1 = Rectangle(9, 5)
+r2 = Rectangle(2, 8)
 
-if r1.area()>r2.area():
+if r1>r2:
     print("Rectangle 1 has smaller area")
 else:
     print("Rectangle 2 have smaller area")
+
